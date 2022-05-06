@@ -1,0 +1,62 @@
+/* Declare some variables */
+:root {
+  --base-color: #ced4da;
+  --light-background: lighten(desaturate($base-color, 50%), 12.5%);
+}
+
+.current-page {
+  font-size: 1.5rem;
+  vertical-align: middle;
+}
+
+.country-card-container {
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+  padding: 1rem 0;
+  display: flex;
+}
+
+.country-name {
+  font-size: 0.9rem;
+}
+
+.country-region {
+  font-size: 0.7rem;
+}
+
+.current-page,
+.country-name,
+.country-region {
+  line-height: 1;
+}
+
+.px-3 {
+  display: flex;
+  flex-direction: column;
+  padding: 0 1rem;
+}
+
+ul.pagination {
+  margin-top: 0;
+  margin-bottom: 0;
+  box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
+  list-style-type: none;
+  display: flex;
+}
+
+ul.pagination li.page-item.active {
+  background-color: #ced4da;
+  border-color: var(--base-color);
+}
+
+ul.pagination a.page-link {
+  padding: 0.75rem 1rem;
+  min-width: 3.5rem;
+  text-align: center;
+  box-shadow: none !important;
+  border-color: var(--base-color) !important;
+  color: saturate(darken(var(--base-color), 30%), 10%);
+  font-weight: 900;
+  font-size: 1rem;
+}

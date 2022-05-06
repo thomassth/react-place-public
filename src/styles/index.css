@@ -1,0 +1,45 @@
+body {
+    font: 14px "Century Gothic", Futura, sans-serif;
+    margin: 20px;
+    max-width: 50rem;
+  }
+  
+@media (prefers-color-scheme:dark){
+    body{
+        background: #111;
+        color: #eee
+    }
+}
+
+.map-box{
+    padding:1rem
+}
+.map-container {
+    height: 400px;
+    }
+
+  ol, ul {
+    padding-left: 0px;
+  }
+  
+  .board-row:after {
+    clear: both;
+    content: "";
+    display: table;
+  }
+  
+  .status {
+    margin-bottom: 10px;
+  }
+  
+  #delete-button {
+    background-color: #d83b01;
+    border-color: #d83b01;
+  }
+  
+  .marker {
+    background-color: lightblue;
+    height: 1rem;
+    width: 1rem;
+    border-radius: 50%;
+  }
