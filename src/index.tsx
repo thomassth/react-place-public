@@ -174,35 +174,38 @@ class Container extends React.Component<{}, {
     const poiList = this.state.poiList
     return (
       <div className="container">
-        <SearchBar
-          getLoc={this.getCurrentLocation}
-          getGeocode={this.searchBoxGeocoding}
-        />
-        <Timezone
-          mapCenter={mapCenter}
-          changeOffset={this.changeOffset}
-        />
-        <Clock
-          mapCenter={mapCenter}
-          timeOffset={this.state.timeOffset}
-          setUtcSec={this.setUtcSec}
-          utcOffsetSec={this.state.utcOffsetSec}
-        />
-
-        <Map
-          mapCenter={mapCenter}
-          poiList={poiList}
-          map={this.map}
-          mapContainer={this.mapContainer}
-        />
+        <div className='main'>
+          <SearchBar
+            getLoc={this.getCurrentLocation}
+            getGeocode={this.searchBoxGeocoding}
+          />
+          <Timezone
+            mapCenter={mapCenter}
+            changeOffset={this.changeOffset}
+          />
+          <Clock
+            mapCenter={mapCenter}
+            timeOffset={this.state.timeOffset}
+            setUtcSec={this.setUtcSec}
+            utcOffsetSec={this.state.utcOffsetSec}
+          />
+          <Map
+            mapCenter={mapCenter}
+            poiList={poiList}
+            map={this.map}
+            mapContainer={this.mapContainer}
+          />
+        </div>
         {/* A table with pagination to show all searched places: */}
         {/* It displays a maximum of 10 records on each page. */}
-        <PoiList
-          onCrdChanged={this.onCrdChanged}
-          poiList={poiList}
-          changeSelectedBox={this.changeSelectedBox}
-          deleteSelected={this.deleteSelected}
-        />
+        <div className='side'>
+          <PoiList
+            onCrdChanged={this.onCrdChanged}
+            poiList={poiList}
+            changeSelectedBox={this.changeSelectedBox}
+            deleteSelected={this.deleteSelected}
+          />
+        </div>
       </div>
     );
   }

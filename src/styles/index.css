@@ -1,45 +1,61 @@
 body {
-    font: 14px "Century Gothic", Futura, sans-serif;
-    margin: 20px;
-    max-width: 50rem;
-  }
-  
-@media (prefers-color-scheme:dark){
-    body{
-        background: #111;
-        color: #eee
-    }
+  font: 14px "Century Gothic", Futura, sans-serif;
+  margin: 20px;
 }
 
-.map-box{
-    padding:1rem
+@media (prefers-color-scheme:dark) {
+  body {
+    background: #111;
+    color: #eee
+  }
 }
+
+.container {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.main {
+  flex: auto;
+  max-width: 50rem;
+}
+
+.container>div {
+  margin: 1rem
+}
+
+.map-box {
+  padding: 1rem
+}
+
 .map-container {
-    height: 400px;
-    }
+  height: 400px;
+}
 
-  ol, ul {
-    padding-left: 0px;
-  }
-  
-  .board-row:after {
-    clear: both;
-    content: "";
-    display: table;
-  }
-  
-  .status {
-    margin-bottom: 10px;
-  }
-  
-  #delete-button {
-    background-color: #d83b01;
-    border-color: #d83b01;
-  }
-  
-  .marker {
-    background-color: lightblue;
-    height: 1rem;
-    width: 1rem;
-    border-radius: 50%;
-  }
+ol,
+ul {
+  padding-left: 0px;
+}
+
+.board-row:after {
+  clear: both;
+  content: "";
+  display: table;
+}
+
+.status {
+  margin-bottom: 10px;
+}
+
+#delete-button {
+  background-color: #d83b01;
+  border-color: #d83b01;
+}
+
+.marker {
+  background-color: lightblue;
+  height: 1rem;
+  width: 1rem;
+  border-radius: 50%;
+}
