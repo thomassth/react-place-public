@@ -1,13 +1,13 @@
 {
   "files": {
     "main.css": "/react-place-public/static/css/main.ef2847b4.css",
-    "main.js": "/react-place-public/static/js/main.0ebcdeb3.js",
+    "main.js": "/react-place-public/static/js/main.deb34cdd.js",
     "index.html": "/react-place-public/index.html",
     "main.ef2847b4.css.map": "/react-place-public/static/css/main.ef2847b4.css.map",
-    "main.0ebcdeb3.js.map": "/react-place-public/static/js/main.0ebcdeb3.js.map"
+    "main.deb34cdd.js.map": "/react-place-public/static/js/main.deb34cdd.js.map"
   },
   "entrypoints": [
     "static/css/main.ef2847b4.css",
-    "static/js/main.0ebcdeb3.js"
+    "static/js/main.deb34cdd.js"
   ]
 }
