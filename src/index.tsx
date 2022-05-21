@@ -1,5 +1,4 @@
-import React from 'react';
-import mapboxgl from 'mapbox-gl';
+import React, { useRef, useState } from 'react';
 import 'mapbox-gl/dist/mapbox-gl.css';
 import { createRoot } from 'react-dom/client';
 import { initializeIcons } from '@fluentui/font-icons-mdl2';
@@ -10,48 +9,35 @@ import PoiList from './components/PoiList';
 import { Poi } from './components/Poi';
 import { Timezone } from './components/Timezone';
 import { Clock } from './components/Clock';
-
+import useLocalStorage from './features/useLocalStorage'
 initializeIcons();
 
 function errLog(error: GeolocationPositionError) {
   console.warn(`Error code ${error.code}: ${error.message}`)
 }
 
+const Container = () => {
+  const [mapCenter, setMapCenter] = useState<number[]>([]);
+  const [selectedBox, setSelectedBox] = useState<number[]>([])
+  const [timeOffset, setTimeOffset] = useState<number[]>([])
+  const [utcOffsetSec, setUtcOffsetSec] = useState(0)
+  const [poiList, setPoiList] = useLocalStorage<Poi[]>('poiList', [])
+  const mapContainer = useRef<any>(null);
+  const map = useRef<any>(null);
 
-class Container extends React.Component<{}, {
-  mapCenter: Array<number>,
-  poiList: Array<Poi>,
-  selectedBox: Array<number>,
-  markerList: Array<any>,
-  timeOffset: Array<number>,
-  utcOffsetSec: number
+  //A checkbox at the beginning of each row to allow user to select multiple records at the same time.
+  //A delete button on the top of it to delete all selected records as well as the marker on the map.
 
-}> {
-  mapContainer: React.RefObject<unknown>;
-  map: React.RefObject<mapboxgl.Map | null>;
-  constructor(props: { crdSaved: GeolocationCoordinates }) {
-    super(props);
-    this.state = {
-      mapCenter: [],
-      poiList: [],
-      selectedBox: [],
-      markerList: [],
-      timeOffset: [],
-      utcOffsetSec: 0
-      // {latitude: 22.30,longitude:114.18,altitude: 7,accuracy: 21, altitudeAccuracy: 8.31, heading: null, speed: null } 
-    };
-    this.mapContainer = React.createRef();
-    this.map = React.createRef()
-  }
+  //Display the time zone and local time of the latest searched location.
 
-  getCurrentLocation = () => {
+  function getCurrentLocation() {
     navigator.geolocation.getCurrentPosition(
       (position) => {
-        this.addNewCrd([position.coords.longitude, position.coords.latitude])
+        addNewCrd([position.coords.longitude, position.coords.latitude])
       }, errLog)
   }
 
-  searchBoxGeocoding = (search_text: string) => {
+  function searchBoxGeocoding(search_text: string) {
     let center: [number, number] = [0, 0]
     if (search_text.length > 0)
       fetch(`https://api.mapbox.com/geocoding/v5/mapbox.places/${search_text}.json?limit=1&access_token=pk.eyJ1IjoidGhvbWFzc3RoIiwiYSI6ImNreTRsZDcyYTA4cDQyd3BseWsyYThwb2kifQ.eqXVOv4PXnYh4DkwffasIQ`, {
@@ -67,86 +53,71 @@ class Container extends React.Component<{}, {
         .then(data => {
           center = data.features[0].center
           const name = data.features[0].place_name
-          this.addNewCrd(center, name)
+          addNewCrd(center, name)
         })
   }
 
-
-
-  onCrdChanged = (newCrd: Array<number>) => {
-    this.setState({
-      mapCenter: newCrd
-    })
+  function onCrdChanged(newCrd: number[]) {
+    setMapCenter(newCrd)
   }
 
-  changeSelectedBox = (number: number, arg: string) => {
-    let selectedBox = this.state.selectedBox
+  function changeSelectedBox(number: number, arg: string) {
+    let currentSelectedBox = selectedBox
     if (arg === 'minus') {
-      this.setState({
-        selectedBox: selectedBox.splice(selectedBox.indexOf(number))
-      })
-    } else if (!this.state.selectedBox.includes(number)) {
-      selectedBox.push(number)
-      this.setState({
-        selectedBox: selectedBox.sort()
-      })
+      setSelectedBox(currentSelectedBox.splice(currentSelectedBox.indexOf(number)))
+    } else if (!selectedBox.includes(number)) {
+      currentSelectedBox.push(number)
+      setSelectedBox(currentSelectedBox.sort())
     }
   }
 
-  deleteSelected = () => {
-    const selectedBox = this.state.selectedBox.reverse()
-    let poiList = this.state.poiList
-    selectedBox.forEach(element => {
-      console.log(element)
-      poiList.splice(element - 1, 1)
+  function deleteSelected() {
+    const currentSelectedBox = selectedBox.reverse()
+    let currentPoiList =
+      poiList
+    currentSelectedBox.forEach((element: number) => {
+      currentPoiList.splice(element - 1, 1)
     });
-    this.setState({
-      selectedBox: [],
-      poiList: poiList
-    })
-    this.reloadMapLayer()
+    setSelectedBox([])
+    setPoiList(currentPoiList)
+    reloadMapLayer()
   }
 
-  setUtcSec = (input: number) => {
-    this.setState({
-      utcOffsetSec: input
-    })
+  function setUtcSec(input: number) {
+    setUtcOffsetSec(input)
   }
 
-  addNewCrd = (newCrd: [number, number], name = 'current location') => {
+  function addNewCrd(newCrd: [number, number], name = 'current location') {
     let shouldAdd = true
-    const newList = this.state.poiList
+    const newList: Poi[] = poiList
     newList.forEach(element => {
-      if (element.center[0] === newCrd[0] && element.center[1] === newCrd[1]) {
+      if (element.geometry.coordinates[0] === newCrd[0] && element.geometry.coordinates[1] === newCrd[1]) {
         shouldAdd = false
       }
     });
     if (shouldAdd) {
-      newList.push(new Poi(this.state.poiList.length + 1, name, newCrd))
-      this.setState({
-        poiList: newList
-      })
+      newList.push(new Poi(poiList.length + 1, name, newCrd))
+      setPoiList(newList)
     }
-    this.onCrdChanged(newCrd)
-    this.reloadMapLayer()
+    onCrdChanged(newCrd)
+    reloadMapLayer()
   }
 
-  reloadMapLayer() {
+  function reloadMapLayer() {
     const stores = {
       'type': 'FeatureCollection',
-      'features': this.state.poiList
+      'features': poiList
     }
 
-    if (this.map.current != null) {
-      let map = this.map.current
-      if (this.map.current.getLayer('locations')) {
-        this.map.current.removeLayer('locations')
-        console.log('removed')
+    if (map.current != null) {
+      let currentMap = map.current
+      if (map.current.getLayer('locations')) {
+        map.current.removeLayer('locations')
       }
-      if (map.getSource('locations')) {
-        map.removeSource('locations');
+      if (currentMap.getSource('locations')) {
+        currentMap.removeSource('locations');
       }
-      this.map.current.addLayer({
+      map.current.addLayer({
         id: 'locations',
         type: 'circle',
         paint: {
@@ -163,52 +134,46 @@ class Container extends React.Component<{}, {
 
   }
 
-  changeOffset = (offset: []) => {
-    this.setState({
-      timeOffset: offset
-    })
+  function changeOffset(offset: []) {
+    setTimeOffset(offset)
   }
 
-  render() {
-    const mapCenter = this.state.mapCenter
-    const poiList = this.state.poiList
-    return (
-      <div className="container">
-        <div className='main'>
-          <SearchBar
-            getLoc={this.getCurrentLocation}
-            getGeocode={this.searchBoxGeocoding}
-          />
-          <Timezone
-            mapCenter={mapCenter}
-            changeOffset={this.changeOffset}
-          />
-          <Clock
-            mapCenter={mapCenter}
-            timeOffset={this.state.timeOffset}
-            setUtcSec={this.setUtcSec}
-            utcOffsetSec={this.state.utcOffsetSec}
-          />
-          <Map
-            mapCenter={mapCenter}
-            poiList={poiList}
-            map={this.map}
-            mapContainer={this.mapContainer}
-          />
-        </div>
-        {/* A table with pagination to show all searched places: */}
-        {/* It displays a maximum of 10 records on each page. */}
-        <div className='side'>
-          <PoiList
-            onCrdChanged={this.onCrdChanged}
-            poiList={poiList}
-            changeSelectedBox={this.changeSelectedBox}
-            deleteSelected={this.deleteSelected}
-          />
-        </div>
+  return (
+    <div className="container">
+      <div className='main'>
+        <SearchBar
+          getLoc={getCurrentLocation}
+          getGeocode={searchBoxGeocoding}
+        />
+        <Timezone
+          mapCenter={mapCenter}
+          changeOffset={changeOffset}
+        />
+        <Clock
+          mapCenter={mapCenter}
+          timeOffset={timeOffset}
+          setUtcSec={setUtcSec}
+          utcOffsetSec={utcOffsetSec}
+        />
+        <Map
+          mapCenter={mapCenter}
+          poiList={poiList}
+          map={map}
+          mapContainer={mapContainer}
+        />
       </div>
-    );
-  }
+      {/* A table with pagination to show all searched places: */}
+      {/* It displays a maximum of 10 records on each page. */}
+      <div className='side'>
+        <PoiList
+          onCrdChanged={onCrdChanged}
+          poiList={poiList}
+          changeSelectedBox={changeSelectedBox}
+          deleteSelected={deleteSelected}
+        />
+      </div>
+    </div>
+  );
 }
 
 // ========================================
